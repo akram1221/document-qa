@@ -1,4 +1,5 @@
 import streamlit as st
+from PyPDF2 import PdfReader
 from openai import OpenAI
 
 # Show title and description.
@@ -15,13 +16,12 @@ openai_api_key = st.text_input("OpenAI API Key", type="password")
 if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
 else:
-
     # Create an OpenAI client.
     client = OpenAI(api_key=openai_api_key)
 
     # Let the user upload a file via `st.file_uploader`.
     uploaded_file = st.file_uploader(
-        "Upload a document (.txt or .pdf)", type=("pdf", "md")
+        "Upload a document (.txt or .pdf)", type=("txt", "pdf")
     )
 
     # Ask the user for a question via `st.text_area`.
@@ -32,9 +32,15 @@ else:
     )
 
     if uploaded_file and question:
-
         # Process the uploaded file and question.
-        document = uploaded_file.read().decode()
+        if uploaded_file.type == "application/pdf":
+            reader = PdfReader(uploaded_file)
+            document = ""
+            for page in reader.pages:
+                document += page.extract_text()
+        else:
+            document = uploaded_file.read().decode("utf-8")
+
         messages = [
             {
                 "role": "user",
