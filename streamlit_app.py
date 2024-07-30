@@ -1,6 +1,5 @@
 import streamlit as st
 from PyPDF2 import PdfReader
-from openai import OpenAI
 import openai
 
 # Show title and description.
@@ -11,8 +10,6 @@ st.write(
 )
 
 # Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
 openai_api_key = st.text_input("OpenAI API Key", type="password")
 if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
@@ -50,14 +47,14 @@ else:
         ]
 
         try:
-            # Generate an answer using the OpenAI API without streaming.
+            # Generate an answer using the OpenAI API.
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=messages
             )
 
             # Extract and display the response.
-            answer = response.choices[0].message['content']
+            answer = response['choices'][0]['message']['content']
             st.write("### Answer")
             st.write(answer)
 
