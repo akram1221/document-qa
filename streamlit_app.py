@@ -1,6 +1,7 @@
 import streamlit as st
 from PyPDF2 import PdfReader
 from openai import OpenAI
+import openai
 
 # Show title and description.
 st.title("📄 Document question answering")
@@ -16,8 +17,8 @@ openai_api_key = st.text_input("OpenAI API Key", type="password")
 if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
 else:
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+    # Initialize the OpenAI API client with the provided API key.
+    openai.api_key = openai_api_key
 
     # Let the user upload a file via `st.file_uploader`.
     uploaded_file = st.file_uploader(
@@ -48,12 +49,17 @@ else:
             }
         ]
 
-        # Generate an answer using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            stream=True,
-        )
+        try:
+            # Generate an answer using the OpenAI API without streaming.
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=messages
+            )
 
-        # Stream the response to the app using `st.write_stream`.
-        st.write_stream(stream)
+            # Extract and display the response.
+            answer = response.choices[0].message['content']
+            st.write("### Answer")
+            st.write(answer)
+
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
